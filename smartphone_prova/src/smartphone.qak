@@ -1,0 +1,50 @@
+System smartphone
+
+//mqttBroker "192.168.43.229" : 1883    //192.168.1.18  192.168.43.229
+mqttBroker "192.168.1.122" : 1883    //192.168.1.18  192.168.43.229
+
+Event  userCmd      : userCmd(X)	//from GUI X = w | a | s | d | h 
+//Event  sonar        : sonar(SONAR, DISTANCE)	 //from sonar in the robot environment   
+//Event  sonarRobot   : sonar( DISTANCE )	         //from  sonar on robot 
+//Event  polar        : p( Distance, Angle )            
+ 
+Dispatch listCmd   : listCmd
+Dispatch searchCmd : searchCmd(X)
+Dispatch fridgeMsg   : fridgeMsg( MSG )
+
+Context ctxSmartphone ip [host="localhost" port=8005]   -mqtt
+Context ctxFridge ip [host="localhost" port=8006]   -mqtt
+
+ExternalQActor fridge context ctxFridge
+
+QActor smartphone context ctxSmartphone {
+	State s0 initial {
+		println("USING SMARTPHONE")
+	}
+	Goto waitUser
+	
+	State waitUser {
+		println("Smartphone waiting for user")
+		delay 1000
+		emit userCmd : userCmd(CIAO)		
+	}
+	Transition t0 whenEvent userCmd -> send
+	
+	State send {
+		println("Smartphone sending information")		
+		//emit userCmd : userCmd(FRIGO)
+		//forward fridge -m listCmd : listCmd
+		forward fridge -m searchCmd : searchCmd(5)
+	}
+	Goto waitAnswer
+	
+	State waitAnswer {
+		println("Smartphone waiting for an answer")		
+	}
+	Transition t1 whenMsg fridgeMsg -> show
+	
+	State show {
+		println("Smartphone showing information")		
+	}
+	Transition t2 whenEvent userCmd -> waitUser	
+}

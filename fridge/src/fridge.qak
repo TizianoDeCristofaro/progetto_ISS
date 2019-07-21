@@ -1,0 +1,82 @@
+System fridge
+
+//mqttBroker "192.168.43.229" : 1883    //192.168.1.18  192.168.43.229
+mqttBroker "192.168.1.122" : 1883    //192.168.1.18  192.168.43.229
+
+Event  userCmd      : userCmd(X)	//from GUI X = w | a | s | d | h 
+//Event  sonar        : sonar(SONAR, DISTANCE)	 //from sonar in the robot environment   
+//Event  sonarRobot   : sonar( DISTANCE )	         //from  sonar on robot 
+//Event  polar        : p( Distance, Angle )            
+ 
+Dispatch fridgeMsg   : fridgeMsg( MSG )
+Dispatch listCmd : listCmd
+Dispatch searchCmd : searchCmd(CODE)
+Dispatch robotCmd : robotCmd(YN)
+
+Context ctxFridge ip [host="localhost" port=8006]   -mqtt
+Context ctxSmartphone ip [host="localhost" port=8005]   -mqtt
+Context ctxRobot ip [host="localhost" port=8007]   -mqtt
+
+ExternalQActor smartphone context ctxSmartphone
+ExternalQActor robot context ctxRobot
+
+QActor fridge context ctxFridge {	
+	
+	["var list = listOf<Int>(2, 5, 1, 9)
+	  var found = false
+	  var payload = \"\" "]
+	
+	State s0 initial {
+		println("HELLO FRIDGE!")
+		//emit userCmd : userCmd(CIAO)
+	}
+	Goto wait
+	
+	State wait {
+		println("FRIDGE WAITING")
+		
+	}	
+	Transition t0 whenMsg listCmd -> list
+				  whenMsg searchCmd -> search  
+	
+	State list {
+		printCurrentMessage
+		println("FRIDGE LISTING")
+		//["var pippo = 15"]
+	}
+	Goto sendList
+	
+	State search {
+		println("FRIDGE SEARCHING")
+		printCurrentMessage
+		onMsg(searchCmd: searchCmd(X)) {
+			println("PAYLOAD: ${payloadArg(0)}")	
+			 ["payload = payloadArg(0)"]		
+			 [ "if(list.contains(payload.toInt())) {
+			found = true
+		  }"]
+		}	
+							
+		println("FOUND: $found")  
+		delay 1000
+	}
+	Goto sendSearch
+	
+	State sendList {
+		println("FRIDGE SENDING LIST")
+		//println("VARIABILE = list")	
+		//["println(pippo)"]	
+		forward  smartphone -m fridgeMsg : fridgeMsg(list)
+		//delay 3000		
+	}
+	Goto wait	
+	
+	State sendSearch {
+		println("FRIDGE SENDING Search")				
+		forward  robot -m robotCmd	: robotCmd(YES)
+	}
+	
+	
+	
+	
+}
