@@ -1,0 +1,34 @@
+	bin
+bin/default
+.metadata
+build
+
+#node
+nodeCode/frontend/node_modules/
+*.lck
+package-lock.json
+
+ # Ignore Gradle project-specific cache directory
+.gradle
+gradlew
+gradlew.bat
+gradle
+
+/ReadMe.html
+.lck/ 
+docker/
+/.metadata/
+/src-gen/
+
+# MQTT generated
+*-tcp*
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+/basicrobot.pl

@@ -1,0 +1,6 @@
+
+> Configure project :
+ executing jar
+
+BUILD SUCCESSFUL in 0s
+4 actionable tasks: 4 up-to-date
